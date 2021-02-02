@@ -40,14 +40,26 @@ class CountdownTimer {
       mins: this.root.querySelector("[data-value='mins']"),
       secs: this.root.querySelector("[data-value='secs']"),
     };
+    this.interval = null;
   }
   start() {
+    if (this.interval !== null) {
+      return;
+    }
     const startTime = this.targetDate.getTime();
     setInterval(() => {
       const currentTime = Date.now();
       const deltaTime = startTime - currentTime;
+
+      if (deltaTime <= 0) {
+        this.stop();
+      }
       this.updateClock(deltaTime);
     }, 1000);
+  }
+  stop() {
+    clearInterval(this.interval);
+    this.root.textContent = '';
   }
   updateClock(time) {
     const days = this.pad(Math.floor(time / (1000 * 60 * 60 * 24)));
@@ -67,6 +79,6 @@ class CountdownTimer {
 }
 const timer = new CountdownTimer({
   selector: '#timer-1',
-  targetDate: new Date('Mar 1, 2021'), //myInput.value
+  targetDate: new Date('Feb 28, 2021'), //myInput.value
 });
 timer.start();
