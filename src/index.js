@@ -1,19 +1,19 @@
 import './styles.css';
-// import flatpickr from 'flatpickr';
-// require('../node_modules/flatpickr/dist/themes/dark.css');
+import flatpickr from 'flatpickr';
+require('../node_modules/flatpickr/dist/themes/dark.css');
 
-// const myInput = document.getElementById('.myInput');
+const myInput = document.getElementById('myInput');
 
-// const fp = flatpickr(myInput, { enableTime: true, dateFormat: 'Y-m-d H:i' });
-// const ref = {
-//   btnStart: document.querySelector('.btnStart'),
-//   btnStop: document.querySelector('.btnStop'),
-// };
-// ref.btnStart.addEventListener('click', timer.start.bind(timer));
-// ref.btnStop.addEventListener('click', timer.stop.bind(timer));
+const fp = flatpickr(myInput, { enableTime: true, dateFormat: 'Y-m-d H:i' });
 
+const ref = {
+  btnStart: document.querySelector('.btnStart'),
+  btnStop: document.querySelector('.btnStop'),
+};
 class CountdownTimer {
-  constructor({ selector, targetDate }) {
+  constructor({ selector }) {
+    this.selector = selector;
+    this.root = document.querySelector(this.selector);
     this.template = `<div class="field">
         <span class="value" data-value="days">0</span>
         <span class="label">Days</span>
@@ -30,36 +30,36 @@ class CountdownTimer {
         <span class="value" data-value="secs">0</span>
         <span class="label">Seconds</span>
       </div>`;
-    this.selector = selector;
-    this.root = document.querySelector(this.selector);
-    this.targetDate = targetDate;
+
     this.root.insertAdjacentHTML('beforeend', this.template);
+    this.interval = null;
     this.refs = {
       days: this.root.querySelector("[data-value='days']"),
       hours: this.root.querySelector("[data-value='hours']"),
       mins: this.root.querySelector("[data-value='mins']"),
       secs: this.root.querySelector("[data-value='secs']"),
     };
-    this.interval = null;
   }
   start() {
-    if (this.interval !== null) {
-      return;
+    const startTime = fp.selectedDates[0];
+    if (startTime) {
+      ref.btnStart.disabled = true;
+      this.interval = setInterval(() => {
+        const currentTime = Date.now();
+        // console.log(currentTime);
+        const deltaTime = startTime - currentTime;
+        this.updateClock(deltaTime);
+      }, 1000);
     }
-    const startTime = this.targetDate.getTime();
-    setInterval(() => {
-      const currentTime = Date.now();
-      const deltaTime = startTime - currentTime;
-
-      if (deltaTime <= 0) {
-        this.stop();
-      }
-      this.updateClock(deltaTime);
-    }, 1000);
   }
   stop() {
     clearInterval(this.interval);
-    this.root.textContent = '';
+    fp.clear();
+    ref.btnStart.disabled = false;
+    this.refs.days.textContent = `${0}`;
+    this.refs.hours.textContent = `${0}`;
+    this.refs.mins.textContent = `${0}`;
+    this.refs.secs.textContent = `${0}`;
   }
   updateClock(time) {
     const days = this.pad(Math.floor(time / (1000 * 60 * 60 * 24)));
@@ -79,6 +79,6 @@ class CountdownTimer {
 }
 const timer = new CountdownTimer({
   selector: '#timer-1',
-  targetDate: new Date('Feb 28, 2021'), //myInput.value
 });
-timer.start();
+ref.btnStart.addEventListener('click', timer.start.bind(timer));
+ref.btnStop.addEventListener('click', timer.stop.bind(timer));
